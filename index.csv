@@ -1,7 +1,4 @@
-<html>
-    <head></head>
-    <body>
-        <pre style="word-wrap: break-word; white-space: pre-wrap;">
+
 Year,MaleAge
 1928,44
 1929,41
@@ -92,6 +89,3 @@ Year,MaleAge
 2014,44
 2015,33
 2016,41
-  </pre>
-    </body>
-</html>
