@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width" />
+
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <!-- Create a div where the graph will take place -->
+    <div id="my_dataviz"></div>
+</head>
+
+<style>
+    body {
+      margin: 0px;
+    }
+    .domain {
+      display: none;
+    }
+    .tick line {
+      stroke: #c0c0bb;
+    }
+    .tick text {
+      fill: #8e8883;
+      font-size: 10pt;
+      font-family: sans-serif;
+    }
+    .axis-label {
+      fill: #150a04;
+      font-size: 14pt;
+      font-family: sans-serif;
+    }
+  </style>
+
+<body>
+    <script>
+        var margin = { top: 30, right: 30, bottom: 40, left: 60 },
+            width = 460 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
+
+       
+
+        // append the svg object to the body of the page
+        var svg = d3.select("#my_dataviz")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+  
+
+                const g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      const xAxisG = g
+        .append("g")
+        .attr("transform", `translate(0, ${innerHeight})`);
+      const yAxisG = g.append("g");
+
+        const xLabel = "Year Oscar Was Won";
+        const yLabel = "Age (In Years)";
+
+        xAxisG
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("x", innerWidth / 2)
+        .attr("y", 80)
+        .text(xLabel);
+
+        svg.append("text")
+    .attr("class", "x label")
+    .attr("text-anchor", "end")
+    .attr("x", width-180)
+    .attr("y", height +35)
+    .text("Age Range");
+
+    svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("y", -49)
+    .attr("dy", ".9em")
+    .attr("transform", "rotate(-90)")
+    .text("Number of Best Actor and Actresses");
+
+        // get the data
+        d3.csv("Type.csv", function (data) {
+
+            // X axis: scale and draw:
+            var x = d3.scaleLinear()
+                .domain([20, 90])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+                .range([0, width]);
+            svg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(d3.axisBottom(x));
+
+            // set the parameters for the histogram
+            var histogram = d3.histogram()
+                .value(function (d) { return +d.Age; })   // I need to give the vector of value
+                .domain(x.domain())  // then the domain of the graphic
+                .thresholds(x.ticks()); // then the numbers of bins
+
+            // And apply twice this function to data to get the bins.
+            var bins1 = histogram(data.filter(function (d) { return d.Type === "Male" }));
+            var bins2 = histogram(data.filter(function (d) { return d.Type === "Female" }));
+
+            // Y axis: scale and draw:
+            var y = d3.scaleLinear()
+                .range([height, 0]);
+            y.domain([0, 40]);   // d3.hist has to be called before the Y axis obviously
+            svg.append("g")
+                .call(d3.axisLeft(y));
+
+            
+            svg.selectAll("rect")
+                .data(bins1)
+                .enter()
+                .append("rect")
+                .attr("x", 1)
+                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+                .attr("height", function (d) { return height - y(d.length); })
+                .style("fill", "#4e63ad")
+                .style("opacity", 0.9)
+
+            
+            svg.selectAll("rect2")
+                .data(bins2)
+                .enter()
+                .append("rect")
+                .attr("x", 1)
+                .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+                .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+                .attr("height", function (d) { return height - y(d.length); })
+                .style("fill", "#99183d")
+                .style("opacity", 0.5)
+
+                
+
+            // Handmade legend
+            svg.append("circle").attr("cx", 300).attr("cy", 30).attr("r", 6).style("fill", "#4e63ad")
+            svg.append("circle").attr("cx", 300).attr("cy", 60).attr("r", 6).style("fill", "#99183d")
+            svg.append("text").attr("x", 320).attr("y", 30).text("Best Actor").style("font-size", "15px").attr("alignment-baseline", "middle")
+            svg.append("text").attr("x", 320).attr("y", 60).text("Best Actress").style("font-size", "15px").attr("alignment-baseline", "middle")
+
+        });
+
+
+
+
+    </script>
+</body>
+
+</html>
