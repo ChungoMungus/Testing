@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <title style="text-align: right">Oscar Winner Ages</title>
+    <style>
+      body {
+        margin: 0px;
+      }
+      .domain {
+        display: none;
+      }
+      .tick line {
+        stroke: #c0c0bb;
+      }
+      .tick text {
+        fill: #8e8883;
+        font-size: 10pt;
+        font-family: sans-serif;
+      }
+      .axis-label {
+        fill: #150a04;
+        font-size: 14pt;
+        font-family: sans-serif;
+      }
+    </style>
+
+    <header style="font-size: 15pt; color: #42403f; text-align: center">
+      Hypothesis: Best Actor Winners Are On Average Older Than Best Actress
+      winners
+    </header>
+    <header style="font-size: 15pt; color: #42403f; text-align: center">
+      Data source: https://people.sc.fsu.edu/~jburkardt/data/csv/csv.html
+    </header>
+  </head>
+  <body>
+    <svg width="800" height="500"></svg>
+    <script>
+      const xValue = (d) => d.Year;
+      const xLabel = "Year Oscar Was Won";
+      const yValue = (d) => d.MaleAge;
+      const yValue2 = (d) => d.FemaleAge;
+      const yLabel = "Age (In Years)";
+      const margin = { left: 120, right: 30, top: 20, bottom: 140 };
+
+      const svg = d3.select("svg");
+      const width = svg.attr("width");
+      const height = svg.attr("height");
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom + 20;
+
+      const g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+      const xAxisG = g
+        .append("g")
+        .attr("transform", `translate(0, ${innerHeight})`);
+      const yAxisG = g.append("g");
+
+      const tAxisG = g
+        .append("g")
+        .attr("transform", `translate(0, ${innerHeight})`);
+      xAxisG
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("x", innerWidth / 2)
+        .attr("y", 80)
+        .text(xLabel);
+
+      yAxisG
+        .append("text")
+        .attr("class", "axis-label")
+        .attr("x", -innerHeight / 2)
+        .attr("y", -60)
+        .attr("transform", `rotate(-90)`)
+        .style("text-anchor", "middle")
+        .text(yLabel);
+
+      let xScale = d3.scaleTime()
+
+      let yScale = d3.scaleLinear().domain([22, 90]).range([0, width]);
+
+      const xAxis = d3
+        .axisBottom()
+        .scale(xScale)
+        .tickPadding(15)
+        .ticks(4)
+        .tickSize(-innerHeight);
+
+      const yAxis = d3
+        .axisLeft()
+        .scale(yScale)
+        .ticks(5)
+        .tickPadding(15)
+        .tickSize(-innerWidth);
+
+      const row = (d) => {
+        d.Year = new Date(d.Year);
+        d.MaleAge = +d.MaleAge;
+        d.FemaleAge = +d.FemaleAge;
+        return d;
+      };
+      d3.csv("Oscars.csv", row, (data) => {
+        var allGroup = ["MaleAge", "FemaleAge"];
+        var dataReady = allGroup.map(function (grpName) {
+          // .map allows to do something for each element of the list
+          return {
+            name: grpName,
+            values: data.map(function (d) {
+              return { time: d.time, value: +d[grpName] };
+            }),
+          };
+        });
+
+        //
+        // xScale.domain([2016, 1928]).range([innerWidth, 0]).nice();
+        //xScale.domain([, 2022]).range([0, innerWidth]).nice();
+
+        xScale.domain(d3.extent(data, xValue))
+          .range([0, innerWidth])
+          .nice();
+
+        yScale.domain([0, 80]).range([innerHeight, 0]).nice();
+
+        var parseTime = d3.timeParse("%Y");
+
+        // var dates = [];
+        // for (let data of Year) {
+        //   dates.push(parseTime(d.Year));
+        // }
+
+        // Draw Male data
+        g.selectAll("circle")
+          .data(data)
+          .enter()
+          .append("circle")
+          .attr("cx", (d) => xScale(d.Year))
+          .attr("cy", (d) => yScale(d.MaleAge))
+          .attr("fill-opacity", 0.7)
+          .attr("r", 4)
+          .style("fill", "#00adee");
+
+        // Draw female data
+        g.selectAll("myPoints")
+          .data(data)
+          .enter()
+          .append("circle")
+          .attr("cx", (d) => xScale(d.Year))
+          .attr("cy", (d) => yScale(d.FemaleAge))
+          .attr("fill-opacity", 0.7)
+          .attr("r", 4)
+          .style("fill", "#DF2F2F");
+
+        xAxisG.call(xAxis);
+        yAxisG.call(yAxis);
+
+        // Handmade legend
+        svg
+          .append("circle")
+          .attr("cx", innerWidth / 5 + 10)
+          .attr("cy", 35)
+          .attr("r", 4)
+          .style("fill", "#00adee");
+        svg
+          .append("circle")
+          .attr("cx", innerWidth / 5 + 10)
+          .attr("cy", 65)
+          .attr("r", 4)
+          .style("fill", "#DF2F2F");
+        svg
+          .append("text")
+          .attr("x", innerWidth / 5 + 16)
+          .attr("y", 35)
+          .text("Best Actor Ages")
+          .style("font-size", "8pt")
+          .attr("alignment-baseline", "top");
+        svg
+          .append("text")
+          .attr("x", innerWidth / 5 + 16)
+          .attr("y", 65)
+          .text("Best Actress Ages")
+          .style("font-size", "8pt")
+          .attr("alignment-baseline", "top");
+      });
+    </script>
+
+    <padding></padding>
+    <img />
+  </body>
+</html>
